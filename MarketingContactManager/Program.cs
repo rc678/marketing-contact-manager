@@ -1,3 +1,6 @@
+using MarketingContactManager.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +9,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<ContactContext>(options =>
+    options.UseSqlServer("Server=DESKTOP-9B7PIME;Database=ContactsDb;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 var app = builder.Build();
 

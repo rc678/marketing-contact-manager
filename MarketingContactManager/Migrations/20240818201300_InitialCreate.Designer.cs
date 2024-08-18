@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MarketingContactManager.Migrations
 {
     [DbContext(typeof(ContactContext))]
-    [Migration("20240818180633_InitialCreate")]
+    [Migration("20240818201300_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

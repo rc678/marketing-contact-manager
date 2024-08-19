@@ -1,7 +1,7 @@
-﻿
+﻿using MarketingContactManager.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MarketingContactManager.Models
+namespace MarketingContactManager.Contexts
 {
     public class ContactContext : DbContext
     {

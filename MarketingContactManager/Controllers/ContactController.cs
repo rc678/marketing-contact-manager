@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MarketingContactManager.Models;
+using MarketingContactManager.Contexts;
 
 namespace MarketingContactManager.Controllers
 {
@@ -14,20 +10,20 @@ namespace MarketingContactManager.Controllers
     public class ContactController : ControllerBase
     {
         private readonly ContactContext _context;
+        private readonly ILogger<ContactController> _logger;
 
-        public ContactController(ContactContext context)
+        public ContactController(ContactContext context, ILogger<ContactController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        // GET: api/Contact
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ContactModel>>> GetContacts()
         {
             return await _context.Contacts.ToListAsync();
         }
 
-        // GET: api/Contact/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ContactModel>> GetContactModel(int id)
         {
@@ -41,15 +37,31 @@ namespace MarketingContactManager.Controllers
             return contactModel;
         }
 
-        // PUT: api/Contact/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutContactModel(int id, ContactModel contactModel)
         {
-            if (id != contactModel.Id)
+            if (string.IsNullOrEmpty(contactModel.Email) || string.IsNullOrEmpty(contactModel.FirstName) ||
+    string.IsNullOrEmpty(contactModel.LastName) || string.IsNullOrEmpty(contactModel.PhoneNumber))
             {
-                return BadRequest();
+                this._logger.LogInformation($"A required input is Null");
+                return this.BadRequest();
             }
+
+            // Validate emails before inserting
+            if (!contactModel.Email.Contains('@'))
+            {
+                this._logger.LogInformation($"Email not formatted correctly for user email {contactModel.Email}");
+                return this.BadRequest();
+            }
+
+            // Validate phone number
+            if (contactModel.PhoneNumber.Length != 10)
+            {
+                this._logger.LogInformation($"Phone number length is not correct {contactModel.PhoneNumber}");
+                return this.BadRequest();
+            }
+
+            contactModel.Id = id;
 
             _context.Entry(contactModel).State = EntityState.Modified;
 
@@ -61,7 +73,7 @@ namespace MarketingContactManager.Controllers
             {
                 if (!ContactModelExists(id))
                 {
-                    return NotFound();
+                    return NotFound($"Contact record with ID {id} not found.");
                 }
                 else
                 {
@@ -72,18 +84,36 @@ namespace MarketingContactManager.Controllers
             return NoContent();
         }
 
-        // POST: api/Contact
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<ContactModel>> PostContactModel(ContactModel contactModel)
         {
+            if (string.IsNullOrEmpty(contactModel.Email) || string.IsNullOrEmpty(contactModel.FirstName) ||
+                string.IsNullOrEmpty(contactModel.LastName) || string.IsNullOrEmpty(contactModel.PhoneNumber))
+            {
+                this._logger.LogInformation($"A required input is Null");
+                return this.BadRequest();
+            }
+
+            // Validate emails before inserting
+            if (!contactModel.Email.Contains('@'))
+            {
+                this._logger.LogInformation($"Email not formatted correctly for user email {contactModel.Email}");
+                return this.BadRequest();
+            }
+
+            // Validate phone number
+            if (contactModel.PhoneNumber.Length != 10)
+            {
+                this._logger.LogInformation($"Phone number length is not correct {contactModel.PhoneNumber}");
+                return this.BadRequest();
+            }
+
             _context.Contacts.Add(contactModel);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetContactModel", new { id = contactModel.Id }, contactModel);
         }
 
-        // DELETE: api/Contact/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteContactModel(int id)
         {

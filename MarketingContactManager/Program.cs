@@ -1,28 +1,29 @@
-using MarketingContactManager.Models;
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
-
+using MarketingContactManager.SchemaFilters;
+using MarketingContactManager.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-//builder.Services.AddDbContext<ContactContext>(options =>
-//    options.UseSqlServer("Server=DESKTOP-9B7PIME;Database=ContactsDb;Trusted_Connection=True;TrustServerCertificate=True;"));
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SchemaFilter<ContactModelFilter>();
+});
 
 Env.Load();
-var connectionString = Environment.GetEnvironmentVariable("DB");
+var server = Environment.GetEnvironmentVariable("DB_SERVER");
+var database = Environment.GetEnvironmentVariable("DB_NAME");
+var trustedConnection = Environment.GetEnvironmentVariable("DB_TRUSTED_CONNECTION");
+var trustServerCertificate = Environment.GetEnvironmentVariable("DB_TRUST_SERVER_CERTIFICATE");
+var connectionString = $"Server={server};Database={database};Trusted_Connection={trustedConnection};TrustServerCertificate={trustServerCertificate};";
 
 builder.Services.AddDbContext<ContactContext>(options =>
     options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
